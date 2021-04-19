@@ -8,6 +8,26 @@
 - legend showing the depth colors
 */
 
+// Create a map object
+const myMap = L.map("map", {
+  center: [15.5994, -28.6731],
+  zoom: 3
+});
+
+// Adding tile layer
+L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
+  attribution: "© <a href='https://www.mapbox.com/about/maps/'>Mapbox</a> © <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a> <strong><a href='https://www.mapbox.com/map-feedback/' target='_blank'>Improve this map</a></strong>",
+  tileSize: 512,
+  maxZoom: 18,
+  zoomOffset: -1,
+  id: "mapbox/streets-v11",
+  accessToken: API_KEY
+}).addTo(myMap);
+
+// Perform an API call to the USGS API to get earthquake information. Call createMarkers when complete
+// d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson").then((data) => {
+//     console.log(data)
+// });
 
 /* NOTE FOR STEP 2
 /  You can use the javascript Promise.all function to make two d3.json calls, 
