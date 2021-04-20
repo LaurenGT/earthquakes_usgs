@@ -33,8 +33,17 @@ function createFeatures(earthquakeData) {
     pointToLayer: (feature, latlng) => {
       return new L.Circle(latlng, {
         radius: feature.properties.mag*25000,
-        fillColor: "red",
-        stroke: false
+        valueProperty: feature.geometry.coordinates[2],
+        scale: ["#39D523", "#b10026"],
+        steps: 20,
+        // mode: "q",
+        // style: {
+        //   color: "#fff",
+        //   weight: 1,
+        //   fillOpacity: 0.8
+        // }
+        // fillColor: "red",
+        // stroke: false
       });
     }
   });
@@ -69,14 +78,14 @@ function createMap(mags) {
 
   const overlayMaps = {
     // Earthquakes: earthquakes,
-    Magnitudes: mags
+    "Magnitudes": mags
   }
 
   // Create a new map
   const myMap = L.map("map", {
     center: [15.5994, -28.6731],
     zoom: 3,
-    layers: [streetmap]
+    layers: [streetmap, mags]
   });
 
 // Create a layer control containing our baseMaps
