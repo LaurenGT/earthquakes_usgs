@@ -8,21 +8,102 @@
 - legend showing the depth colors
 */
 
-// Create a map object
-const myMap = L.map("map", {
-  center: [15.5994, -28.6731],
-  zoom: 3
+// API endpoint
+const queryURL = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson"
+
+// GET request to url
+d3.json(queryURL).then(data => {
+  console.log(data.features);
+  createFeatures(data.features)
 });
 
-// Adding tile layer
-L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
-  attribution: "© <a href='https://www.mapbox.com/about/maps/'>Mapbox</a> © <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a> <strong><a href='https://www.mapbox.com/map-feedback/' target='_blank'>Improve this map</a></strong>",
-  tileSize: 512,
-  maxZoom: 18,
-  zoomOffset: -1,
-  id: "mapbox/streets-v11",
-  accessToken: API_KEY
+function createFeatures(earthquakeData) {
+  function onEachFeature(feature, layer) {
+    layer.bindPopup("<h3> popup working </h3>")
+  }
+
+  const earthquakes = L.geoJSON(earthquakeData, {
+    onEachFeature: onEachFeature,
+  });
+
+
+  const mags = L.geoJSON(earthquakeData, {
+    onEachFeature: onEachFeature,
+    pointToLayer: (feature, latlng) => {
+      return new L.Circle(latlng, {
+        radius: feature.properties.mag*25000,
+        fillColor: "red",
+        stroke: false
+      });
+    }
+  });
+
+  createMap(earthquakes, mags)
+}
+
+function createMap(earthquakes, mags) {
+
+  // Define streetmap and darkmap layers
+  const streetmap = L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
+    attribution: "© <a href='https://www.mapbox.com/about/maps/'>Mapbox</a> © <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a> <strong><a href='https://www.mapbox.com/map-feedback/' target='_blank'>Improve this map</a></strong>",
+    tileSize: 512,
+    maxZoom: 18,
+    zoomOffset: -1,
+    id: "mapbox/streets-v11",
+    accessToken: API_KEY
+  });
+
+  const darkmap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
+    attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
+    maxZoom: 18,
+    id: "dark-v10",
+    accessToken: API_KEY
+  });
+
+  // Define a baseMaps object to hold our base layers
+  const baseMaps = {
+    "Street Map": streetmap,
+    "Dark Map": darkmap
+  };
+
+  const overlayMaps = {
+    Earthquakes: earthquakes,
+    Magnitudes: mags
+  }
+
+  // Create a new map
+  const myMap = L.map("map", {
+    center: [15.5994, -28.6731],
+    zoom: 3,
+    layers: [streetmap, earthquakes]
+  });
+
+// Create a layer control containing our baseMaps
+// Be sure to add an overlay Layer containing the earthquake GeoJSON
+L.control.layers(baseMaps, overlayMaps, {
+  collapsed: false
 }).addTo(myMap);
+}
+
+// // Create a map object
+// const myMap = L.map("map", {
+//   center: [15.5994, -28.6731],
+//   zoom: 3
+// });
+
+// // Adding tile layer
+// L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
+//   attribution: "© <a href='https://www.mapbox.com/about/maps/'>Mapbox</a> © <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a> <strong><a href='https://www.mapbox.com/map-feedback/' target='_blank'>Improve this map</a></strong>",
+//   tileSize: 512,
+//   maxZoom: 18,
+//   zoomOffset: -1,
+//   id: "mapbox/streets-v11",
+//   accessToken: API_KEY
+// }).addTo(myMap);
+
+// function circleColor(mag) {
+
+// }
 
 // Perform an API call to the USGS API to get earthquake information. Call createMarkers when complete
 // d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson").then((data) => {
