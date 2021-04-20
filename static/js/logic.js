@@ -19,7 +19,7 @@ d3.json(queryURL).then(data => {
 
 function createFeatures(earthquakeData) {
   function onEachFeature(feature, layer) {
-    layer.bindPopup("<h3> popup working </h3>")
+    layer.bindPopup(`<strong>Location:</strong>${feature.properties.place}<br><strong>Magnitude:</strong>${feature.properties.mag}`)
   }
 
 
@@ -33,17 +33,17 @@ function createFeatures(earthquakeData) {
     pointToLayer: (feature, latlng) => {
       return new L.Circle(latlng, {
         radius: feature.properties.mag*25000,
-        valueProperty: feature.geometry.coordinates[2],
-        scale: ["#39D523", "#b10026"],
-        steps: 20,
-        // mode: "q",
+        valueProperty: 'coordinates',
+        scale: ["green", "red"],
+        steps: 5,
+        mode: "q",
         // style: {
         //   color: "#fff",
         //   weight: 1,
         //   fillOpacity: 0.8
-        // }
+        // },
         // fillColor: "red",
-        // stroke: false
+        stroke: false
       });
     }
   });
