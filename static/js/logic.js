@@ -22,9 +22,10 @@ function createFeatures(earthquakeData) {
     layer.bindPopup("<h3> popup working </h3>")
   }
 
-  const earthquakes = L.geoJSON(earthquakeData, {
-    onEachFeature: onEachFeature,
-  });
+
+  // const earthquakes = L.geoJSON(earthquakeData, {
+  //   onEachFeature: onEachFeature,
+  // });
 
 
   const mags = L.geoJSON(earthquakeData, {
@@ -38,10 +39,10 @@ function createFeatures(earthquakeData) {
     }
   });
 
-  createMap(earthquakes, mags)
+  createMap(mags)
 }
 
-function createMap(earthquakes, mags) {
+function createMap(mags) {
 
   // Define streetmap and darkmap layers
   const streetmap = L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
@@ -53,21 +54,21 @@ function createMap(earthquakes, mags) {
     accessToken: API_KEY
   });
 
-  const darkmap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
-    attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
-    maxZoom: 18,
-    id: "dark-v10",
-    accessToken: API_KEY
-  });
+  // const darkmap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
+  //   attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
+  //   maxZoom: 18,
+  //   id: "dark-v10",
+  //   accessToken: API_KEY
+  // });
 
   // Define a baseMaps object to hold our base layers
   const baseMaps = {
     "Street Map": streetmap,
-    "Dark Map": darkmap
+    // "Dark Map": darkmap,
   };
 
   const overlayMaps = {
-    Earthquakes: earthquakes,
+    // Earthquakes: earthquakes,
     Magnitudes: mags
   }
 
@@ -75,7 +76,7 @@ function createMap(earthquakes, mags) {
   const myMap = L.map("map", {
     center: [15.5994, -28.6731],
     zoom: 3,
-    layers: [streetmap, earthquakes]
+    layers: [streetmap]
   });
 
 // Create a layer control containing our baseMaps
@@ -129,3 +130,41 @@ L.control.layers(baseMaps, overlayMaps, {
 /
 / ----------------------------------------*/
 
+
+
+/*
+Terra Notes
+
+variable with queryURL
+basic map setup
+basic tileLayer
+those are not dependent on data
+
+
+option 1
+
+d3.json(url).then(data => {
+  - L.geojson().addTo(myMap)
+
+  - legend setup
+
+
+})
+
+option 2
+function createLayer(data) {
+  L.geoJson(data, {
+    pointToLayer: key:value,
+
+  }).add
+}
+
+function createLegend(data) {
+  legend setup
+}
+
+d3.json(url).then(data => {
+  createLayer(data);
+  createLegend(data)
+
+*/
