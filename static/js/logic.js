@@ -17,6 +17,10 @@ d3.json(queryURL).then(data => {
   createFeatures(data.features)
 });
 
+function colorDepth(depth) {
+
+}
+
 function createFeatures(earthquakeData) {
   function onEachFeature(feature, layer) {
     layer.bindPopup(`<strong>Location:</strong>${feature.properties.place}<br><strong>Magnitude:</strong>${feature.properties.mag}`)
@@ -33,10 +37,11 @@ function createFeatures(earthquakeData) {
     pointToLayer: (feature, latlng) => {
       return new L.Circle(latlng, {
         radius: feature.properties.mag*25000,
-        valueProperty: 'coordinates',
-        scale: ["green", "red"],
-        steps: 5,
-        mode: "q",
+        // valueProperty: 'coordinates',
+        // colorScale: {colors: ["red", "green"]},
+        // scale: ["green", "red"],
+        // steps: 5,
+        // mode: "q",
         // style: {
         //   color: "#fff",
         //   weight: 1,
