@@ -14,40 +14,49 @@ const queryURL = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_
 // GET request to url
 d3.json(queryURL).then(data => {
   console.log(data.features);
+  // console.log(d3.extent(data.features.map(d => d.geometry.coordinates[2])))
+  let depthExtent = d3.extent(data.features.map(d => d.geometry.coordinates[2]))
+  console.log(depthExtent)
   createFeatures(data.features)
 });
 
-function colorDepth(depth) {
-
-}
-
-function createFeatures(earthquakeData) {
-  function onEachFeature(feature, layer) {
-    layer.bindPopup(`<strong>Location:</strong>${feature.properties.place}<br><strong>Magnitude:</strong>${feature.properties.mag}`)
+function getColor(depth) {
+  switch(true){
+    case depth < 52:
+      return "#E21919"
+    // case depth < 114:
+    //   return "#AD4040"
+    // case depth < 176:
+    //   return "#E92929"
+    // case depth < 238:
+    //   return "#E97229"
+    // case depth < 300:
+    //   return "#F09C44"
+    // case depth < 362:
+    //   return "#F9B720"
+    // case depth < 424:
+    //   return "#F9D220"
+    // case depth < 486:
+    //   return "#ADEB14"
+    // case depth < 548:
+    //   return "#6FEB14"
+    default:
+      return "#5BBC14"
+  }
   }
 
 
-  // const earthquakes = L.geoJSON(earthquakeData, {
-  //   onEachFeature: onEachFeature,
-  // });
-
+function createFeatures(earthquakeData) {
+  function onEachFeature(feature, layer) {
+    layer.bindPopup(`<strong>Location:</strong>${feature.properties.place}<br><strong>Magnitude:</strong>${feature.properties.mag}<br><strong>Depth:</strong>${feature.geometry.coordinates[2]}`)
+  }
 
   const mags = L.geoJSON(earthquakeData, {
     onEachFeature: onEachFeature,
     pointToLayer: (feature, latlng) => {
       return new L.Circle(latlng, {
         radius: feature.properties.mag*25000,
-        // valueProperty: 'coordinates',
-        // colorScale: {colors: ["red", "green"]},
-        // scale: ["green", "red"],
-        // steps: 5,
-        // mode: "q",
-        // style: {
-        //   color: "#fff",
-        //   weight: 1,
-        //   fillOpacity: 0.8
-        // },
-        // fillColor: "red",
+        fillColor: getColor(feature.geometry.coordinates[2]),
         stroke: false
       });
     }
@@ -98,7 +107,42 @@ function createMap(mags) {
 L.control.layers(baseMaps, overlayMaps, {
   collapsed: false
 }).addTo(myMap);
-}
+
+// const legend = L.control({position: 'bottomright'});
+// legend.onAdd = function (map) {
+//   const div = L.DomUtil.create('div', 'info legend');
+//   div.innerHTML='Eathquake<br>Depth<br><hr>'
+// };legend.addTo(myMap)
+const legend = L.control({ position: "bottomright" });
+legend.onAdd = function() {
+  const div = L.DomUtil.create("div", "info legend");
+  const grades = [-10, 52];
+  const colors = ["#E21919", "#5BBC14"];
+  const labels = [];
+
+  for (let i = 0; i < grades.length; i++) {
+    div.innerHTML +=
+      `<i style="background: ` +getColor(grades[i] + 1) + `"></i>` + grades[i] + (grades[i + 1] ? `&ndash;` + grades[i + 1] + `<br>` : `+`);
+  }
+  return div;
+};legend.addTo(myMap);
+};
+
+
+
+// const legend = L.control({ position: "bottomright" });
+// legend.onAdd = function() {
+//   const div = L.DomUtil.create("div", "info legend");
+//   const grades = [-10, 52];
+//   // const colors = ["#E21919", "#5BBC14"];
+//   const labels = [];
+
+//   for (let i = 0; i < grades.length; i++) {
+//     div.innerHTML +=
+//       `<i style="background: ` +getColor(grades[i] + 1) + `"></i>` + grades[i] + (grades[i + 1] ? `&ndash;` + grades[i + 1] + `<br>` : `+`);
+//   }
+//   return div;
+// };legend.addTo(myMap);
 
 // // Create a map object
 // const myMap = L.map("map", {
