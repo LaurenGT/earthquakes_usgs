@@ -3,12 +3,13 @@ const queryURL = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_
 
 // GET request to url
 d3.json(queryURL).then(data => {
-  console.log(data.features);
-  let depthExtent = d3.extent(data.features.map(d => d.geometry.coordinates[2]))
-  console.log(depthExtent)
+  // console.log(data.features);
+  // let depthExtent = d3.extent(data.features.map(d => d.geometry.coordinates[2]))
+  // console.log(depthExtent)
   createFeatures(data.features)
 });
 
+// determine color of circle based on depth ranges
 function getColor(depth) {
   switch (true) {
     case depth < 1:
@@ -26,12 +27,13 @@ function getColor(depth) {
   }
 }
 
-
+// create popups for each earthquake
 function createFeatures(earthquakeData) {
   function onEachFeature(feature, layer) {
     layer.bindPopup(`<strong>Location:</strong>${feature.properties.place}<br><strong>Magnitude:</strong>${feature.properties.mag}<br><strong>Depth:</strong>${feature.geometry.coordinates[2]}`)
   }
 
+  // create circles with sizes based on magnitude and color from calling the getColor function
   const mags = L.geoJSON(earthquakeData, {
     onEachFeature: onEachFeature,
     pointToLayer: (feature, latlng) => {
@@ -49,9 +51,10 @@ function createFeatures(earthquakeData) {
   createMap(mags)
 }
 
+// create map function
 function createMap(mags) {
 
-  // Define streetmap and darkmap layers
+  // Define streetmap layer
   const streetmap = L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
     attribution: "© <a href='https://www.mapbox.com/about/maps/'>Mapbox</a> © <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a> <strong><a href='https://www.mapbox.com/map-feedback/' target='_blank'>Improve this map</a></strong>",
     tileSize: 512,
@@ -67,11 +70,12 @@ function createMap(mags) {
     "Street Map": streetmap,
   };
 
+  // define overlay maps
   const overlayMaps = {
     "Magnitudes": mags
   }
 
-  // Create a new map
+  // Create a new map displaying base (streetmap) and magnitudes on page load
   const myMap = L.map("map", {
     center: [15.5994, -32.6731],
     zoom: 3,
@@ -83,6 +87,7 @@ function createMap(mags) {
     collapsed: false
   }).addTo(myMap);
 
+  // create legend based on the ranges set in the getColor
   var legend = L.control({ position: "bottomright" });
   legend.onAdd = function () {
     const div = L.DomUtil.create("div", "info legend");
@@ -92,10 +97,10 @@ function createMap(mags) {
     for (let i = 0; i < grades.length; i++) {
       let legendInfo = `<i style="background: ${(colors[i])}"></i>` + grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
       div.innerHTML += legendInfo;
-      console.log(legendInfo);
+      // console.log(legendInfo);
     }
     return div;
-  }; console.log(legend)
+  }; // console.log(legend)
   legend.addTo(myMap);
 };
 
