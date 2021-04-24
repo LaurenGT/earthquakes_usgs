@@ -6,4 +6,4 @@ To successfully use this code, you will need to have an access token to Mapbox.
 
 Below is a sample image of what you should expect to see render when using this code.
 
-![sample webpage result]()
+![sample webpage result](https://github.com/LaurenGT/earthquakes_usgs/blob/main/sample_map.png)
