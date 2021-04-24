@@ -1,49 +1,30 @@
-/* @TODO
-- get data for all earthquakes in past 7 days
-- use URL for pull in the data
-- create a Leaflet map plotting all earthquakes by lat/lon
-- circle size: magnitude
-- circle color: depth (deeper = darker)
-- popups with additional information about the earthqUake ON CLICK
-- legend showing the depth colors
-*/
-
 // API endpoint
 const queryURL = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson"
 
 // GET request to url
 d3.json(queryURL).then(data => {
   console.log(data.features);
-  // console.log(d3.extent(data.features.map(d => d.geometry.coordinates[2])))
   let depthExtent = d3.extent(data.features.map(d => d.geometry.coordinates[2]))
   console.log(depthExtent)
   createFeatures(data.features)
 });
 
 function getColor(depth) {
-  switch(true){
-    case depth < 52:
-      return "#E21919"
-    // case depth < 114:
-    //   return "#AD4040"
-    // case depth < 176:
-    //   return "#E92929"
-    // case depth < 238:
-    //   return "#E97229"
-    // case depth < 300:
-    //   return "#F09C44"
-    // case depth < 362:
-    //   return "#F9B720"
-    // case depth < 424:
-    //   return "#F9D220"
-    // case depth < 486:
-    //   return "#ADEB14"
-    // case depth < 548:
-    //   return "#6FEB14"
+  switch (true) {
+    case depth < 1:
+      return "#fc0000"
+    case depth < 10:
+      return "#ff6200"
+    case depth < 30:
+      return "#ffae00"
+    case depth < 50:
+      return "#ffe600"
+    case depth < 90:
+      return "#c8ff00"
     default:
-      return "#5BBC14"
+      return "#37ff00"
   }
-  }
+}
 
 
 function createFeatures(earthquakeData) {
@@ -55,9 +36,12 @@ function createFeatures(earthquakeData) {
     onEachFeature: onEachFeature,
     pointToLayer: (feature, latlng) => {
       return new L.Circle(latlng, {
-        radius: feature.properties.mag*25000,
+        radius: feature.properties.mag * 75000,
         fillColor: getColor(feature.geometry.coordinates[2]),
-        stroke: false
+        stroke: true,
+        color: "black",
+        weight: .3,
+        fillOpacity: .75
       });
     }
   });
@@ -77,100 +61,46 @@ function createMap(mags) {
     accessToken: API_KEY
   });
 
-  // const darkmap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
-  //   attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
-  //   maxZoom: 18,
-  //   id: "dark-v10",
-  //   accessToken: API_KEY
-  // });
 
   // Define a baseMaps object to hold our base layers
   const baseMaps = {
     "Street Map": streetmap,
-    // "Dark Map": darkmap,
   };
 
   const overlayMaps = {
-    // Earthquakes: earthquakes,
     "Magnitudes": mags
   }
 
   // Create a new map
   const myMap = L.map("map", {
-    center: [15.5994, -28.6731],
+    center: [15.5994, -32.6731],
     zoom: 3,
     layers: [streetmap, mags]
   });
 
-// Create a layer control containing our baseMaps
-// Be sure to add an overlay Layer containing the earthquake GeoJSON
-L.control.layers(baseMaps, overlayMaps, {
-  collapsed: false
-}).addTo(myMap);
+  // Create a layer control containing our baseMaps
+  L.control.layers(baseMaps, overlayMaps, {
+    collapsed: false
+  }).addTo(myMap);
 
-// const legend = L.control({position: 'bottomright'});
-// legend.onAdd = function (map) {
-//   const div = L.DomUtil.create('div', 'info legend');
-//   div.innerHTML='Eathquake<br>Depth<br><hr>'
-// };legend.addTo(myMap)
-const legend = L.control({ position: "bottomright" });
-legend.onAdd = function() {
-  const div = L.DomUtil.create("div", "info legend");
-  const grades = [-10, 52];
-  const colors = ["#E21919", "#5BBC14"];
-  const labels = [];
+  var legend = L.control({ position: "bottomright" });
+  legend.onAdd = function () {
+    const div = L.DomUtil.create("div", "info legend");
+    const grades = [-10, 1, 10, 30, 50, 90];
+    const colors = ["#fc0000", "#ff6200", "#ffae00", "#ffe600", "#c8ff00", "#37ff00"];
 
-  for (let i = 0; i < grades.length; i++) {
-    div.innerHTML +=
-      `<i style="background: ` +getColor(grades[i] + 1) + `"></i>` + grades[i] + (grades[i + 1] ? `&ndash;` + grades[i + 1] + `<br>` : `+`);
-  }
-  return div;
-};legend.addTo(myMap);
+    for (let i = 0; i < grades.length; i++) {
+      let legendInfo = `<i style="background: ${(colors[i])}"></i>` + grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+      div.innerHTML += legendInfo;
+      console.log(legendInfo);
+    }
+    return div;
+  }; console.log(legend)
+  legend.addTo(myMap);
 };
 
-
-
-// const legend = L.control({ position: "bottomright" });
-// legend.onAdd = function() {
-//   const div = L.DomUtil.create("div", "info legend");
-//   const grades = [-10, 52];
-//   // const colors = ["#E21919", "#5BBC14"];
-//   const labels = [];
-
-//   for (let i = 0; i < grades.length; i++) {
-//     div.innerHTML +=
-//       `<i style="background: ` +getColor(grades[i] + 1) + `"></i>` + grades[i] + (grades[i + 1] ? `&ndash;` + grades[i + 1] + `<br>` : `+`);
-//   }
-//   return div;
-// };legend.addTo(myMap);
-
-// // Create a map object
-// const myMap = L.map("map", {
-//   center: [15.5994, -28.6731],
-//   zoom: 3
-// });
-
-// // Adding tile layer
-// L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
-//   attribution: "© <a href='https://www.mapbox.com/about/maps/'>Mapbox</a> © <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a> <strong><a href='https://www.mapbox.com/map-feedback/' target='_blank'>Improve this map</a></strong>",
-//   tileSize: 512,
-//   maxZoom: 18,
-//   zoomOffset: -1,
-//   id: "mapbox/streets-v11",
-//   accessToken: API_KEY
-// }).addTo(myMap);
-
-// function circleColor(mag) {
-
-// }
-
-// Perform an API call to the USGS API to get earthquake information. Call createMarkers when complete
-// d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson").then((data) => {
-//     console.log(data)
-// });
-
 /* NOTE FOR STEP 2
-/  You can use the javascript Promise.all function to make two d3.json calls, 
+/  You can use the javascript Promise.all function to make two d3.json calls,
 /  and your then function will not run until all data has been retreived.
 /
 / ----------------------------------------
@@ -187,42 +117,3 @@ legend.onAdd = function() {
 /    }).catch(e => console.warn(e));
 /
 / ----------------------------------------*/
-
-
-
-/*
-Terra Notes
-
-variable with queryURL
-basic map setup
-basic tileLayer
-those are not dependent on data
-
-
-option 1
-
-d3.json(url).then(data => {
-  - L.geojson().addTo(myMap)
-
-  - legend setup
-
-
-})
-
-option 2
-function createLayer(data) {
-  L.geoJson(data, {
-    pointToLayer: key:value,
-
-  }).add
-}
-
-function createLegend(data) {
-  legend setup
-}
-
-d3.json(url).then(data => {
-  createLayer(data);
-  createLegend(data)
-
-*/
